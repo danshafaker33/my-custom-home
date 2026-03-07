@@ -1,29 +1,26 @@
 <template>
   <div class="music-player-fixed" :class="{ 'is-collapsed': isCollapsed }">
-    <!-- Collapse Toggle -->
     <div class="player-toggle" @click="isCollapsed = !isCollapsed">
       <v-icon color="white" size="small">
         {{ isCollapsed ? 'mdi-chevron-right' : 'mdi-chevron-left' }}
       </v-icon>
     </div>
 
-    <!-- Main Player Body -->
     <div class="player-body">
-      <!-- Cover/Disc -->
       <div class="player-cover" :class="{ 'is-playing': musicStore.isPlaying }" @click="togglePlay">
         <v-avatar size="50" class="w-100 h-100" color="grey-darken-3">
-          <v-img 
-            v-if="currentSong && currentSong.cover" 
+          <v-img
+            v-if="currentSong && currentSong.cover"
             :key="currentSong.url"
-            :src="currentSong.cover" 
+            :src="currentSong.cover"
             cover
           >
-            <template v-slot:placeholder>
+            <template #placeholder>
               <div class="d-flex align-center justify-center fill-height">
                 <v-icon size="24" color="white">mdi-music</v-icon>
               </div>
             </template>
-            <template v-slot:error>
+            <template #error>
               <div class="d-flex align-center justify-center fill-height">
                 <v-icon size="24" color="white">mdi-music</v-icon>
               </div>
@@ -33,8 +30,7 @@
         </v-avatar>
       </div>
 
-      <!-- Info & Controls -->
-      <div class="player-content" v-show="!isCollapsed">
+      <div v-show="!isCollapsed" class="player-content">
         <div class="song-info">
           <div class="song-title text-truncate">{{ currentSong.title }}</div>
           <div class="song-artist text-truncate">{{ currentSong.artist }}</div>
@@ -42,18 +38,17 @@
 
         <div class="player-controls">
           <v-btn icon="mdi-skip-previous" variant="text" size="x-small" color="white" @click="musicStore.prev()"></v-btn>
-          <v-btn 
-            :icon="musicStore.isPlaying ? 'mdi-pause' : 'mdi-play'" 
-            variant="text" 
-            size="small" 
-            color="white" 
+          <v-btn
+            :icon="musicStore.isPlaying ? 'mdi-pause' : 'mdi-play'"
+            variant="text"
+            size="small"
+            color="white"
             @click="togglePlay"
           ></v-btn>
           <v-btn icon="mdi-skip-next" variant="text" size="x-small" color="white" @click="musicStore.next()"></v-btn>
-          
-          <!-- Volume Slider -->
+
           <v-menu :close-on-content-click="false" location="top" offset="10">
-            <template v-slot:activator="{ props }">
+            <template #activator="{ props }">
               <v-btn icon="mdi-volume-high" variant="text" size="x-small" color="white" v-bind="props"></v-btn>
             </template>
             <v-card width="40" height="120" class="d-flex flex-column align-center py-2 bg-grey-darken-4">
@@ -70,63 +65,62 @@
             </v-card>
           </v-menu>
 
-          <!-- Mode Toggle -->
-          <v-btn 
-            :icon="modeIcon" 
-            variant="text" 
-            size="x-small" 
-            color="white" 
-            @click="musicStore.toggleMode"
+          <v-btn
+            :icon="modeIcon"
             :title="modeTitle"
+            variant="text"
+            size="x-small"
+            color="white"
+            @click="musicStore.toggleMode"
           ></v-btn>
 
-          <!-- Playlist Toggle -->
-          <v-btn 
-            icon="mdi-playlist-music" 
-            variant="text" 
-            size="x-small" 
-            color="white" 
-            @click.stop="showPlaylist = !showPlaylist"
+          <v-btn
+            icon="mdi-playlist-music"
+            variant="text"
+            size="x-small"
             :color="showPlaylist ? 'primary' : 'white'"
+            @click.stop="showPlaylist = !showPlaylist"
           ></v-btn>
         </div>
 
-        <!-- Progress Bar -->
         <div class="player-progress-container">
           <div class="d-flex align-center gap-1 mb-1">
             <span class="text-tiny text-grey">{{ formatTime(musicStore.currentTime) }}</span>
-            <v-progress-linear
-              :model-value="(musicStore.currentTime / musicStore.duration) * 100"
+            <v-slider
+              v-model="musicStore.currentTime"
+              :max="musicStore.duration"
+              min="0"
+              step="1"
+              hide-details
+              density="compact"
               color="white"
-              height="2"
-              class="player-progress flex-grow-1"
-              @click="handleSeek"
-            ></v-progress-linear>
+              class="player-slider flex-grow-1"
+              @update:model-value="musicStore.seek"
+            ></v-slider>
             <span class="text-tiny text-grey">{{ formatTime(musicStore.duration) }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Playlist Drawer -->
     <v-expand-transition>
       <div v-if="showPlaylist && !isCollapsed" class="playlist-drawer">
         <div class="playlist-header d-flex align-center justify-space-between px-4 py-2">
           <div class="d-flex gap-4">
-            <span 
-              class="text-caption font-weight-bold cursor-pointer" 
+            <span
+              class="text-caption font-weight-bold cursor-pointer"
               :class="activeTab === 'playlist' ? 'text-primary' : 'text-grey'"
               @click="activeTab = 'playlist'"
             >播放列表</span>
-            <span 
+            <span
               class="text-caption font-weight-bold cursor-pointer ml-4"
               :class="activeTab === 'lyrics' ? 'text-primary' : 'text-grey'"
               @click="activeTab = 'lyrics'"
             >歌词</span>
           </div>
-          <span v-if="activeTab === 'playlist'" class="text-caption text-grey">{{ musicStore.playlist.length }}首</span>
+          <span v-if="activeTab === 'playlist'" class="text-caption text-grey">{{ musicStore.playlist.length }} 首</span>
         </div>
-        
+
         <v-divider color="white" class="opacity-20"></v-divider>
 
         <v-list v-if="activeTab === 'playlist'" density="compact" bg-color="transparent" class="playlist-content">
@@ -140,7 +134,7 @@
             class="playlist-item"
             @click="playSong(index)"
           >
-            <template v-slot:prepend>
+            <template #prepend>
               <div class="d-flex align-center mr-2">
                 <span class="text-tiny text-grey mr-2 index-num" style="width: 12px">{{ index + 1 }}</span>
                 <v-avatar size="24" rounded="sm" color="grey-darken-3">
@@ -152,8 +146,12 @@
             <v-list-item-title class="text-caption text-white song-item-title">
               {{ song.title }}
             </v-list-item-title>
-            <template v-slot:append>
-               <v-icon v-if="musicStore.currentSongIndex === index && musicStore.isPlaying" size="x-small" color="primary">mdi-volume-high</v-icon>
+            <template #append>
+              <v-icon
+                v-if="musicStore.currentSongIndex === index && musicStore.isPlaying"
+                size="x-small"
+                color="primary"
+              >mdi-volume-high</v-icon>
             </template>
           </v-list-item>
         </v-list>
@@ -162,12 +160,12 @@
           <div v-if="musicStore.parsedLyrics.length === 0" class="d-flex align-center justify-center fill-height text-caption text-grey">
             暂无歌词
           </div>
-          <div v-else class="lyrics-scroll" ref="lyricsScrollRef">
-            <div 
-              v-for="(line, index) in musicStore.parsedLyrics" 
+          <div v-else ref="lyricsScrollRef" class="lyrics-scroll">
+            <div
+              v-for="(line, index) in musicStore.parsedLyrics"
               :key="index"
               class="lyric-line text-caption text-center py-2 px-2"
-              :class="{ 'active': musicStore.currentLyricIndex === index }"
+              :class="{ active: musicStore.currentLyricIndex === index }"
             >
               {{ line.text }}
             </div>
@@ -189,17 +187,23 @@ const lyricsScrollRef = ref(null)
 
 const modeIcon = computed(() => {
   switch (musicStore.mode) {
-    case 'loop': return 'mdi-repeat-once'
-    case 'random': return 'mdi-shuffle'
-    default: return 'mdi-repeat'
+    case 'loop':
+      return 'mdi-repeat-once'
+    case 'random':
+      return 'mdi-shuffle'
+    default:
+      return 'mdi-repeat'
   }
 })
 
 const modeTitle = computed(() => {
   switch (musicStore.mode) {
-    case 'loop': return '单曲循环'
-    case 'random': return '随机播放'
-    default: return '列表循环'
+    case 'loop':
+      return '单曲循环'
+    case 'random':
+      return '随机播放'
+    default:
+      return '列表循环'
   }
 })
 
@@ -224,13 +228,6 @@ const formatTime = (seconds) => {
   const min = Math.floor(seconds / 60)
   const sec = Math.floor(seconds % 60)
   return `${min}:${sec.toString().padStart(2, '0')}`
-}
-
-const handleSeek = (e) => {
-  const container = e.currentTarget
-  const rect = container.getBoundingClientRect()
-  const percent = (e.clientX - rect.left) / rect.width
-  musicStore.seek(percent * musicStore.duration)
 }
 
 const scrollToCurrentLyric = () => {
@@ -272,7 +269,7 @@ watch(activeTab, (newVal) => {
   display: flex;
   align-items: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-left: none;
   min-width: 66px;
@@ -291,7 +288,6 @@ watch(activeTab, (newVal) => {
   z-index: 2;
 }
 
-/* ... existing styles ... */
 .player-cover {
   width: 50px;
   height: 50px;
@@ -370,12 +366,46 @@ watch(activeTab, (newVal) => {
   gap: 4px;
 }
 
+.player-slider {
+  margin: 0;
+  height: 20px;
+}
+
+.player-slider :deep(.v-slider-track__background) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  height: 2px !important;
+}
+
+.player-slider :deep(.v-slider-track__fill) {
+  background: white !important;
+  height: 2px !important;
+  border-radius: 2px !important;
+}
+
+.player-slider :deep(.v-slider-thumb__surface) {
+  background: white !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+}
+
+.player-slider :deep(.v-slider-thumb__ripple) {
+  display: none;
+}
+
+.player-slider :deep(.v-slider-track) {
+  --v-slider-track-size: 2px;
+}
+
+.player-slider:hover :deep(.v-slider-thumb__surface) {
+  transform: scale(1.2);
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Playlist Drawer Styles */
 .playlist-drawer {
   position: absolute;
   bottom: 100%;
@@ -390,7 +420,7 @@ watch(activeTab, (newVal) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  margin-bottom: -1px; /* Overlap border */
+  margin-bottom: -1px;
 }
 
 .playlist-header {
@@ -408,6 +438,7 @@ watch(activeTab, (newVal) => {
 .playlist-content::-webkit-scrollbar {
   width: 4px;
 }
+
 .playlist-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
@@ -429,6 +460,7 @@ watch(activeTab, (newVal) => {
 .lyrics-scroll::-webkit-scrollbar {
   width: 4px;
 }
+
 .lyrics-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
@@ -467,8 +499,18 @@ watch(activeTab, (newVal) => {
   min-width: 15px;
 }
 
-/* 隐藏 slider 细节 */
 .music-player-fixed :deep(.v-slider__container) {
   margin-bottom: 0;
+}
+
+@media (max-width: 959px) {
+  .music-player-fixed {
+    bottom: 16px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .music-player-fixed.is-collapsed {
+    transform: translateX(-150px);
+  }
 }
 </style>

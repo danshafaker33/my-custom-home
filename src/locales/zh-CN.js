@@ -1,9 +1,9 @@
 export default {
   profile: {
-    name: "旧衣皆墨丶",
+    name: "旧衣皆墨",
     title: "全栈开发者",
-    bio: "热衷于构建美观且实用的 Web 应用程序。我热爱 Vue.js 和现代 UI 设计。",
-    skills_title: "技能点"
+    bio: "热衷于构建兼具美感与实用性的 Web 应用。我喜欢 Vue.js 和现代化界面设计。",
+    skills_title: "技能熟练度"
   },
   projects: {
     title: "我的项目",
@@ -22,8 +22,8 @@ export default {
     add_music: "添加音乐",
     title: "歌名",
     artist: "歌手",
-    url: "音频链接 (URL 或 /music/文件名.mp3)",
-    cover: "封面链接 (URL 或 /covers/文件名.jpg)",
+    url: "音频链接（URL 或 /music/文件名.mp3）",
+    cover: "封面链接（URL 或 /covers/文件名.jpg）",
     submit: "添加",
     delete: "删除"
   },

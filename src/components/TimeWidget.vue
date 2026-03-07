@@ -4,7 +4,7 @@
       <div class="digital-time">{{ timeStr }}</div>
       <div class="date-str">{{ dateStr }}</div>
     </div>
-    
+
     <div class="orbit-container">
       <div class="orbit-circle orbit-1"></div>
       <div class="orbit-circle orbit-2"></div>
@@ -25,12 +25,18 @@ const dateStr = ref('')
 const updateTime = () => {
   const now = new Date()
   timeStr.value = now.toLocaleTimeString('zh-CN', { hour12: false })
-  
-  const options = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'long' }
-  dateStr.value = now.toLocaleDateString('zh-CN', options).replace(/\//g, ' 年 ').replace(',', ' 日 ')
+
+  const datePart = now.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  const weekdayPart = now.toLocaleDateString('zh-CN', { weekday: 'long' })
+  dateStr.value = `${datePart} ${weekdayPart}`
 }
 
 let timer
+
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
@@ -45,30 +51,34 @@ onUnmounted(() => {
 @import url('https://fonts.cdnfonts.com/css/digital-7-mono');
 
 .time-widget {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(93, 114, 112, 0.24), rgba(70, 80, 90, 0.2));
+  backdrop-filter: blur(14px);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
   position: relative;
+  width: min(100%, 300px);
+  padding-inline: 1.75rem !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
 .digital-time {
   font-family: 'Digital-7 Mono', monospace;
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: #fff;
   text-shadow: 0 0 10px rgba(var(--v-theme-primary), 0.8);
   letter-spacing: 2px;
 }
 
 .date-str {
-  font-size: 0.9rem;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
   color: rgba(255, 255, 255, 0.7);
-  margin-top: 0px;
+  margin-top: 0;
+  overflow-wrap: anywhere;
 }
 
 .orbit-container {
-  height: 100px;
+  height: clamp(60px, 15vw, 100px);
   position: relative;
   display: flex;
   align-items: center;
@@ -84,24 +94,24 @@ onUnmounted(() => {
 }
 
 .orbit-1 {
-  width: 80px;
-  height: 80px;
+  width: clamp(50px, 12vw, 80px);
+  height: clamp(50px, 12vw, 80px);
   border-top-color: #00f2fe;
   animation-duration: 8s;
 }
 
 .orbit-2 {
-  width: 60px;
-  height: 60px;
+  width: clamp(40px, 9vw, 60px);
+  height: clamp(40px, 9vw, 60px);
   border-right-color: #4facfe;
   animation-duration: 5s;
   animation-direction: reverse;
 }
 
 .orbit-3 {
-  width: 40px;
-  height: 40px;
-  border-bottom-color: #a6c1ee;
+  width: clamp(30px, 6vw, 40px);
+  height: clamp(30px, 6vw, 40px);
+  border-bottom-color: #00f2fe;
   animation-duration: 3s;
 }
 
